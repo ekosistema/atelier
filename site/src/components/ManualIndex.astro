@@ -1,0 +1,126 @@
+---
+import { categories, bySlug, href, levelKey, cap, manuals } from '../data/lib';
+---
+
+<div class="index not-content">
+  <div class="toolbar" role="search">
+    <label class="q">
+      <span class="sr-only">Filtrar manuales por nombre o tema</span>
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="mf-q" type="search" placeholder="Filtrar por nombre o tema…" autocomplete="off" />
+    </label>
+    <div class="levels" role="group" aria-label="Filtrar por nivel">
+      <button type="button" data-level="" aria-pressed="true">Todos</button>
+      <button type="button" data-level="basico" aria-pressed="false">Básico</button>
+      <button type="button" data-level="intermedio" aria-pressed="false">Intermedio</button>
+      <button type="button" data-level="avanzado" aria-pressed="false">Avanzado</button>
+    </div>
+  </div>
+  <p class="status" role="status" aria-live="polite" data-total={manuals.length}>{manuals.length} manuales</p>
+
+  <nav class="jump" aria-label="Ir a un tema">
+    {categories.map((c) => (<a href={`#${c.id}`}>{c.title}</a>))}
+  </nav>
+
+  {categories.map((c) => (
+    <section class="cat" id={c.id} aria-labelledby={`h-${c.id}`}>
+      <h2 class="cat-title" id={`h-${c.id}`}><span aria-hidden="true">{c.emoji}</span> {c.title}</h2>
+      <p class="cat-blurb">{c.blurb}</p>
+      <ul class="list">
+        {c.slugs.map((s) => bySlug.get(s)).filter(Boolean).map((m) => (
+          <li data-level={levelKey(m!.level)} data-text={`${m!.title} ${m!.tagline} ${m!.description}`.toLowerCase()}>
+            <a href={href(m!.slug)}>
+              <span class="t">{m!.title}</span>
+              <span class="chip chip-level" data-level={levelKey(m!.level)}>{cap(m!.level)}</span>
+              <span class="d">{m!.tagline}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  ))}
+  <p class="empty" hidden>Ningún manual coincide con el filtro. Prueba con otro término o quita el nivel.</p>
+</div>
+
+<script>
+  const q = document.getElementById('mf-q') as HTMLInputElement;
+  const btns = [...document.querySelectorAll<HTMLButtonElement>('.levels button')];
+  const items = [...document.querySelectorAll<HTMLElement>('.list li')];
+  const cats = [...document.querySelectorAll<HTMLElement>('.cat')];
+  const empty = document.querySelector<HTMLElement>('.empty')!;
+  const status = document.querySelector<HTMLElement>('.status')!;
+  const jump = document.querySelector<HTMLElement>('.jump')!;
+  let level = '';
+
+  const run = () => {
+    const t = q.value.trim().toLowerCase();
+    items.forEach((li) => {
+      li.hidden = !((!level || li.dataset.level === level) && (!t || li.dataset.text!.includes(t)));
+    });
+    cats.forEach((c) => (c.hidden = !c.querySelector('li:not([hidden])')));
+    const n = items.filter((li) => !li.hidden).length;
+    const filtering = !!(t || level);
+    status.textContent = filtering ? `${n} de ${items.length} manuales` : `${items.length} manuales`;
+    empty.hidden = n > 0;
+    jump.hidden = filtering;
+    const url = new URL(location.href);
+    t ? url.searchParams.set('q', t) : url.searchParams.delete('q');
+    level ? url.searchParams.set('nivel', level) : url.searchParams.delete('nivel');
+    history.replaceState(null, '', url);
+  };
+
+  const params = new URLSearchParams(location.search);
+  q.value = params.get('q') ?? '';
+  level = params.get('nivel') ?? '';
+  btns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.level === level)));
+  if (q.value || level) run();
+
+  q.addEventListener('input', run);
+  btns.forEach((b) =>
+    b.addEventListener('click', () => {
+      level = b.dataset.level!;
+      btns.forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      run();
+    })
+  );
+</script>
+
+<style>
+  .toolbar {
+    display: flex; flex-wrap: wrap; gap: var(--ds-space-3); align-items: center; margin-top: var(--ds-space-5);
+    position: sticky; top: var(--sl-nav-height); z-index: 5; padding: var(--ds-space-3) 0; background: var(--ds-bg);
+  }
+  .q { flex: 1 1 16rem; display: flex; align-items: center; gap: var(--ds-space-2); min-height: 2.75rem; padding: 0 var(--ds-space-3); border: 1px solid var(--ds-border); border-radius: var(--ds-radius-md); background: var(--ds-surface); color: var(--ds-text-subtle); }
+  .q:focus-within { border-color: var(--ds-accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ds-accent) 25%, transparent); }
+  .q input { flex: 1; min-width: 0; height: 100%; font: inherit; font-size: var(--sl-text-sm); color: var(--ds-text); background: none; border: 0; outline: 0; }
+
+  /* Segmentado: botones del mismo alto, separados por una línea, sin márgenes heredados */
+  .levels { display: inline-flex; align-items: stretch; border: 1px solid var(--ds-border); border-radius: var(--ds-radius-md); overflow: hidden; background: var(--ds-surface); }
+  .levels button { margin: 0; min-height: 2.75rem; padding: 0 var(--ds-space-4); font: inherit; font-size: var(--sl-text-sm); color: var(--ds-text-muted); background: none; border: 0; cursor: pointer; }
+  .levels button + button { border-inline-start: 1px solid var(--ds-border); }
+  .levels button:hover { color: var(--ds-text); background: var(--ds-surface-raised); }
+  .levels button[aria-pressed='true'] { background: var(--ds-accent); color: var(--ds-on-accent); font-weight: 700; }
+  .levels button:focus-visible { outline-offset: -3px; }
+
+  .status { margin: var(--ds-space-1) 0 var(--ds-space-3); font-size: var(--sl-text-sm); color: var(--ds-text-subtle); }
+  .jump { display: flex; flex-wrap: wrap; gap: var(--ds-space-2); margin-bottom: var(--ds-space-4); }
+  .jump[hidden] { display: none; }
+  .jump a { display: inline-flex; align-items: center; min-height: var(--ds-target-min); padding: 0 var(--ds-space-3); font-size: var(--sl-text-xs); color: var(--ds-text-muted); text-decoration: none; border: 1px solid var(--ds-border); border-radius: var(--ds-radius-pill); background: var(--ds-surface); }
+  .jump a:hover { color: var(--ds-text); border-color: var(--ds-accent); }
+  .empty { color: var(--ds-text-muted); }
+
+  .cat { margin-top: var(--ds-space-6); scroll-margin-top: 7rem; content-visibility: auto; contain-intrinsic-size: auto 18rem; }
+  .cat[hidden], .list li[hidden] { display: none; }
+  .cat-title { margin: 0; font-size: var(--sl-text-h3); color: var(--ds-text); border: 0; }
+  .cat-blurb { margin: var(--ds-space-1) 0 var(--ds-space-3); color: var(--ds-text-subtle); font-size: var(--sl-text-sm); }
+  .list { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(18rem, 100%), 1fr)); gap: var(--ds-space-2); }
+  .list li { margin: 0; display: flex; }
+  .list a {
+    display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 2px var(--ds-space-3); width: 100%;
+    padding: var(--ds-space-3) var(--ds-space-4); border-radius: var(--ds-radius-md); text-decoration: none;
+    border: 1px solid var(--ds-border); background: var(--ds-surface); transition: border-color var(--ds-dur-fast), transform var(--ds-dur-fast);
+  }
+  .list a:hover { border-color: var(--ds-accent); transform: translateY(-1px); }
+  .t { font-weight: 650; color: var(--ds-text); }
+  .d { grid-column: 1 / -1; font-size: var(--sl-text-xs); color: var(--ds-text-subtle); line-height: 1.4; }
+</style>

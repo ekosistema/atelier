@@ -1,0 +1,26 @@
+---
+import { faq } from '../data/faq';
+---
+
+<div class="faq not-content">
+  {faq.map((f) => (
+    <details>
+      <summary><span>{f.q}</span></summary>
+      <p>{f.a}</p>
+    </details>
+  ))}
+</div>
+
+<style>
+  .faq { display: grid; gap: var(--ds-space-2); margin-top: var(--ds-space-5); max-width: var(--ds-content-width); }
+  details { border: 1px solid var(--ds-border); border-radius: var(--ds-radius-md); background: var(--ds-surface); }
+  summary {
+    display: flex; align-items: center; justify-content: space-between; gap: var(--ds-space-4); min-height: 3rem; padding: var(--ds-space-2) var(--ds-space-4);
+    font-weight: 600; color: var(--ds-text); cursor: pointer; list-style: none;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: '+'; flex: none; width: 1.5rem; text-align: center; font-size: 1.4rem; line-height: 1; color: var(--ds-accent-text); transition: transform var(--ds-dur); }
+  details[open] > summary::after { transform: rotate(45deg); }
+  details[open] { border-color: color-mix(in srgb, var(--ds-accent) 50%, var(--ds-border)); }
+  p { margin: 0; padding: 0 var(--ds-space-4) var(--ds-space-4); color: var(--ds-text-muted); line-height: 1.65; max-width: var(--ds-measure); }
+</style>

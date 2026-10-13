@@ -1,0 +1,110 @@
+---
+// <head> de Starlight + precarga de la tipografía crítica + datos estructurados JSON-LD (SEO y GEO).
+// Todo se genera en el build (HTML estático): los rastreadores y los LLM no necesitan ejecutar JS.
+import Default from '@astrojs/starlight/components/Head.astro';
+import interLatin from '@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url';
+import { bySlug, categoryOf, routesOf, paths, categories, manuals, base, cap } from '../data/lib';
+import { faq } from '../data/faq';
+import { site as brand } from '../data/site.mjs';
+
+const { entry } = Astro.locals.starlightRoute;
+const id = entry.id;
+const site = Astro.site ?? new URL('http://localhost:4321');
+const abs = (p: string) => new URL(p, site).href;
+const pageUrl = abs(Astro.url.pathname);
+const root = abs(`${base}/`);
+
+const orgId = 'https://celerolab.com/#organization';
+const siteId = `${root}#website`;
+const org = {
+  '@type': 'Organization', '@id': orgId, name: 'CeleroLab', url: 'https://celerolab.com/',
+  logo: { '@type': 'ImageObject', url: 'https://celerolab.com/icon-512x512.png' },
+};
+const website = {
+  '@type': 'WebSite', '@id': siteId, url: root, name: brand.name, alternateName: `${brand.name}: ${brand.tagline}`, inLanguage: 'es',
+  description: brand.description,
+  publisher: { '@id': orgId }, license: 'https://opensource.org/license/mit',
+};
+const crumbs = (items: { name: string; url: string }[]) => ({
+  '@type': 'BreadcrumbList', '@id': `${pageUrl}#breadcrumb`,
+  itemListElement: items.map((it, i) => ({ '@type': 'ListItem', position: i + 1, name: it.name, item: it.url })),
+});
+
+const graph: object[] = [org, website];
+const slug = id.startsWith('manuales/') ? id.slice('manuales/'.length) : '';
+const manual = slug ? bySlug.get(slug) : undefined;
+
+if (id === 'index') {
+  graph.push({
+    '@type': 'FAQPage', '@id': `${pageUrl}#faq`, inLanguage: 'es',
+    mainEntity: faq.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+  });
+} else if (manual) {
+  const cat = categoryOf(slug);
+  graph.push({
+    '@type': 'TechArticle', '@id': `${pageUrl}#article`, url: pageUrl, inLanguage: 'es',
+    headline: manual.tagline ? `${manual.title}: ${manual.tagline}` : manual.title,
+    description: manual.description,
+    isPartOf: { '@id': siteId }, author: { '@id': orgId }, publisher: { '@id': orgId },
+    dateModified: manual.reviewedISO || undefined,
+    educationalLevel: manual.level ? cap(manual.level) : undefined,
+    timeRequired: `PT${manual.minutes}M`,
+    dependencies: manual.requires || undefined,
+    license: 'https://opensource.org/license/mit',
+    about: { '@type': 'Thing', name: manual.title },
+    keywords: [manual.title, cat?.title].filter(Boolean).join(', '),
+  });
+  graph.push(crumbs([
+    { name: 'Inicio', url: root },
+    { name: 'Manuales', url: abs(`${base}/manuales/`) },
+    ...(cat ? [{ name: cat.title, url: abs(`${base}/manuales/#${cat.id}`) }] : []),
+    { name: manual.title, url: pageUrl },
+  ]));
+} else if (id.startsWith('rutas/') && id !== 'rutas') {
+  const route = paths.find((p) => p.id === id.slice('rutas/'.length));
+  if (route) {
+    graph.push({
+      '@type': 'Course', '@id': `${pageUrl}#course`, url: pageUrl, name: route.title, description: route.goal, inLanguage: 'es',
+      provider: { '@id': orgId }, isAccessibleForFree: true, audience: { '@type': 'Audience', audienceType: route.audience },
+      hasPart: { '@id': `${pageUrl}#steps` },
+    });
+    graph.push({
+      '@type': 'ItemList', '@id': `${pageUrl}#steps`, name: `Pasos de la ruta «${route.title}»`, itemListOrder: 'https://schema.org/ItemListOrderAscending',
+      itemListElement: route.steps.map((s, i) => ({ '@type': 'ListItem', position: i + 1, name: bySlug.get(s)?.title ?? s, url: abs(`${base}/manuales/${s}/`) })),
+    });
+    graph.push(crumbs([
+      { name: 'Inicio', url: root },
+      { name: 'Rutas de aprendizaje', url: abs(`${base}/rutas/`) },
+      { name: route.title, url: pageUrl },
+    ]));
+  }
+} else if (id === 'manuales' || id === 'rutas') {
+  graph.push({
+    '@type': 'CollectionPage', '@id': `${pageUrl}#collection`, url: pageUrl, inLanguage: 'es', isPartOf: { '@id': siteId },
+    name: id === 'manuales' ? 'Índice de manuales' : 'Rutas de aprendizaje',
+    numberOfItems: id === 'manuales' ? manuals.length : paths.length,
+  });
+  graph.push(crumbs([{ name: 'Inicio', url: root }, { name: id === 'manuales' ? 'Manuales' : 'Rutas de aprendizaje', url: pageUrl }]));
+}
+
+const jsonld = JSON.stringify({ '@context': 'https://schema.org', '@graph': graph }).replace(/</g, '\\u003c');
+---
+
+<Default {...Astro.props}><slot /></Default>
+<link rel="preload" as="font" type="font/woff2" href={interLatin} crossorigin />
+<script type="application/ld+json" set:html={jsonld} />
+<script>
+  // Accesibilidad: un bloque de código con scroll horizontal debe poder enfocarse con teclado (WCAG 2.1.1).
+  const fix = () =>
+    document.querySelectorAll<HTMLElement>('.expressive-code pre').forEach((pre) => {
+      const scrolls = pre.scrollWidth > pre.clientWidth;
+      if (scrolls && !pre.hasAttribute('tabindex')) {
+        pre.tabIndex = 0;
+        pre.setAttribute('role', 'region');
+        pre.setAttribute('aria-label', 'Bloque de código (desplazable)');
+      }
+    });
+  addEventListener('DOMContentLoaded', fix);
+  addEventListener('load', fix);
+  addEventListener('resize', fix, { passive: true });
+</script>

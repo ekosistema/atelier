@@ -1,0 +1,131 @@
+---
+import { paths, bySlug, href, levelKey, cap } from '../data/lib';
+
+const { id } = Astro.props as { id: string };
+const route = paths.find((p) => p.id === id)!;
+const steps = route.steps.map((s) => bySlug.get(s)!).filter(Boolean);
+const totalMin = steps.reduce((a, m) => a + m.minutes, 0);
+const hours = Math.round(totalMin / 6) / 10;
+---
+
+<section class="route not-content" data-route={id} style={`--route-accent:${route.accent}`} aria-label={`Ruta: ${route.title}`}>
+  <header class="head">
+    <p class="lead">{route.goal}</p>
+    <dl class="facts">
+      <div><dt>Para</dt><dd>{route.audience}</dd></div>
+      <div><dt>Manuales</dt><dd>{steps.length}</dd></div>
+      <div><dt>Lectura total</dt><dd>~{hours} h</dd></div>
+    </dl>
+
+    <div class="progress">
+      <div class="bar" role="progressbar" aria-label="Progreso de la ruta" aria-valuemin="0" aria-valuemax={steps.length} aria-valuenow="0" aria-valuetext={`0 de ${steps.length} completados`}><i></i></div>
+      <p class="count" role="status"><b data-done>0</b> de {steps.length} completados</p>
+      <button type="button" class="reset" data-reset hidden>Reiniciar progreso</button>
+    </div>
+  </header>
+
+  <ol class="steps">
+    {steps.map((m, i) => (
+      <li class="step" data-slug={m.slug}>
+        <span class="node" aria-hidden="true">{i + 1}</span>
+        <div class="card">
+          <div class="top">
+            <a class="name" href={`${href(m.slug)}?ruta=${id}`}>{m.title}</a>
+            <span class="chip chip-level" data-level={levelKey(m.level)}>{cap(m.level)}</span>
+            <span class="min">~{m.minutes} min</span>
+          </div>
+          {m.tagline && <p class="tag">{m.tagline}</p>}
+          <label class="done">
+            <input type="checkbox" data-check={m.slug} aria-label={`Marcar «${m.title}» como completado`} />
+            <span>Completado</span>
+          </label>
+        </div>
+      </li>
+    ))}
+  </ol>
+</section>
+
+<script>
+  import { readDone, setDone, rememberRoute } from '../scripts/progress';
+
+  document.querySelectorAll<HTMLElement>('.route').forEach((root) => {
+    rememberRoute(root.dataset.route!);
+    const boxes = [...root.querySelectorAll<HTMLInputElement>('[data-check]')];
+    const bar = root.querySelector<HTMLElement>('.bar')!;
+    const fill = bar.querySelector<HTMLElement>('i')!;
+    const counter = root.querySelector<HTMLElement>('[data-done]')!;
+    const reset = root.querySelector<HTMLButtonElement>('[data-reset]')!;
+
+    const paint = () => {
+      const done = boxes.filter((b) => b.checked).length;
+      counter.textContent = String(done);
+      fill.style.width = `${(done / boxes.length) * 100}%`;
+      bar.setAttribute('aria-valuenow', String(done));
+      bar.setAttribute('aria-valuetext', `${done} de ${boxes.length} completados`);
+      reset.hidden = done === 0;
+      boxes.forEach((b) => b.closest('.step')!.classList.toggle('is-done', b.checked));
+    };
+
+    const saved = readDone();
+    boxes.forEach((b) => (b.checked = saved.has(b.dataset.check!)));
+    paint();
+
+    boxes.forEach((b) => b.addEventListener('change', () => { setDone(b.dataset.check!, b.checked); paint(); }));
+    reset.addEventListener('click', () => {
+      boxes.forEach((b) => { setDone(b.dataset.check!, false); b.checked = false; });
+      paint();
+    });
+  });
+</script>
+
+<style>
+  .route { margin-top: var(--ds-space-5); }
+  .lead { font-size: var(--sl-text-lg); color: var(--ds-text-muted); margin: 0 0 var(--ds-space-5); max-width: var(--ds-measure); }
+
+  .facts { display: flex; flex-wrap: wrap; gap: var(--ds-space-2); margin: 0 0 var(--ds-space-5); }
+  .facts div { display: inline-flex; gap: var(--ds-space-2); align-items: baseline; padding: .35rem .8rem; border: 1px solid var(--ds-border); border-radius: var(--ds-radius-pill); font-size: var(--sl-text-sm); background: var(--ds-surface); }
+  .facts dt { color: var(--ds-text-subtle); font-size: var(--sl-text-xs); text-transform: uppercase; letter-spacing: .06em; }
+  .facts dd { margin: 0; color: var(--ds-text); }
+
+  .progress { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: var(--ds-space-4); margin-bottom: var(--ds-space-6); }
+  .bar { height: .5rem; background: var(--sl-color-gray-5); border-radius: var(--ds-radius-pill); overflow: hidden; }
+  .bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--route-accent), var(--ds-accent)); transition: width .35s var(--ds-ease); border-radius: inherit; }
+  .count { margin: 0; font-size: var(--sl-text-sm); color: var(--ds-text-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .reset { font: inherit; font-size: var(--sl-text-xs); min-height: var(--ds-target-min); padding: 0 var(--ds-space-2); color: var(--ds-text-subtle); background: none; border: 0; text-decoration: underline; cursor: pointer; }
+  .reset:hover { color: var(--ds-text); }
+  .reset[hidden] { display: none; }
+
+  /* Línea de tiempo: el hilo pasa por el centro exacto de cada nodo (1.125rem = mitad de 2.25rem) */
+  .steps { list-style: none; margin: 0; padding: 0; position: relative; display: grid; gap: var(--ds-space-3); }
+  .steps::before { content: ''; position: absolute; left: 1.0625rem; top: 1.125rem; bottom: 1.125rem; width: 2px; background: color-mix(in srgb, var(--route-accent) 40%, transparent); }
+  .step { display: grid; grid-template-columns: 2.25rem 1fr; gap: var(--ds-space-4); margin: 0; position: relative; align-items: start; }
+  .node {
+    width: 2.25rem; height: 2.25rem; border-radius: 50%; display: grid; place-items: center; z-index: 1; margin-top: .6rem;
+    font-weight: 700; font-size: var(--sl-text-sm); font-variant-numeric: tabular-nums;
+    background: var(--ds-bg); color: color-mix(in srgb, var(--route-accent) 55%, var(--ds-text)); border: 2px solid var(--route-accent);
+    transition: background var(--ds-dur), color var(--ds-dur);
+  }
+  .card { border: 1px solid var(--ds-border); border-radius: var(--ds-radius-lg); padding: var(--ds-space-3) var(--ds-space-4); background: var(--ds-surface); transition: border-color var(--ds-dur), box-shadow var(--ds-dur); }
+  .card:hover { border-color: color-mix(in srgb, var(--route-accent) 60%, transparent); box-shadow: var(--ds-shadow-card); }
+  .top { display: flex; align-items: center; gap: var(--ds-space-2) var(--ds-space-3); flex-wrap: wrap; }
+  .name { display: inline-flex; align-items: center; min-height: var(--ds-target-min); font-weight: 650; font-size: var(--sl-text-lg); color: var(--ds-text); text-decoration: none; }
+  .name:hover { text-decoration: underline; text-underline-offset: .2em; }
+  .min { margin-inline-start: auto; font-size: var(--sl-text-xs); color: var(--ds-text-subtle); }
+  .tag { margin: 0 0 var(--ds-space-2); color: var(--ds-text-muted); font-size: var(--sl-text-sm); }
+  .done { display: inline-flex; gap: var(--ds-space-2); align-items: center; min-height: var(--ds-target-min); font-size: var(--sl-text-xs); color: var(--ds-text-subtle); cursor: pointer; user-select: none; }
+  .done input { accent-color: var(--ds-accent); width: 1.125rem; height: 1.125rem; margin: 0; cursor: pointer; }
+
+  /* Completado: el estado se comunica con texto (✓ y tachado), no solo con color ni opacidad */
+  .step.is-done .node { background: var(--route-accent); color: #0b0d14; }
+  .step.is-done .node::before { content: '✓'; }
+  .step.is-done .node { font-size: 0; }
+  .step.is-done .node::before { font-size: var(--sl-text-base); }
+  .step.is-done .name { text-decoration: line-through; text-decoration-thickness: 1px; }
+  .step.is-done .done span::after { content: ' ✓'; }
+
+  @media (max-width: 36rem) {
+    .progress { grid-template-columns: 1fr; gap: var(--ds-space-2); }
+    .min { margin-inline-start: 0; }
+  }
+  @media (pointer: coarse) { .done, .name, .reset { min-height: var(--ds-target-touch); } }
+</style>

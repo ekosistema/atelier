@@ -1,0 +1,50 @@
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+.AppleDouble
+.LSOverride
+Icon?
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Editores / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Contexto de agentes / asistentes (local, no versionado)
+AGENTS.md
+.gemini/
+.CLAUDE.md
+CLAUDE.md
+.cursor/
+.cursorrules
+.aider*
+.agent-context/
+hermes/
+.hermes/
+
+# Archivos temporales y de trabajo
+tmp/
+temp/
+*.tmp
+*.bak
+*.orig
+*.log
+
+# Entornos y dependencias (por si se añaden ejemplos ejecutables)
+.venv/
+venv/
+env/
+node_modules/
+__pycache__/
+*.pyc

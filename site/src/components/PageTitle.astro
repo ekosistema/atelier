@@ -1,0 +1,46 @@
+---
+// Título de página: oculto en la portada (lleva su propio h1) y, en manuales y rutas, con migas de pan.
+import Default from '@astrojs/starlight/components/PageTitle.astro';
+import { bySlug, categoryOf, base } from '../data/lib';
+
+const { entry } = Astro.locals.starlightRoute;
+const isSplash = entry.data.template === 'splash';
+const id = entry.id;
+
+type Crumb = { label: string; href?: string };
+const crumbs: Crumb[] = [{ label: 'Inicio', href: `${base}/` }];
+
+if (id.startsWith('manuales/')) {
+  const slug = id.slice('manuales/'.length);
+  crumbs.push({ label: 'Manuales', href: `${base}/manuales/` });
+  const cat = bySlug.has(slug) ? categoryOf(slug) : undefined;
+  if (cat) crumbs.push({ label: cat.title, href: `${base}/manuales/#${cat.id}` });
+} else if (id.startsWith('rutas/')) {
+  crumbs.push({ label: 'Rutas de aprendizaje', href: `${base}/rutas/` });
+} else if (id === 'estado') {
+  /* solo Inicio */
+}
+const show = !isSplash && crumbs.length > 1 && id !== 'manuales';
+---
+
+{isSplash ? null : (
+  <>
+    {show && (
+      <nav class="crumbs not-content" aria-label="Migas de pan">
+        <ol>
+          {crumbs.map((c) => (<li>{c.href ? <a href={c.href}>{c.label}</a> : <span>{c.label}</span>}</li>))}
+        </ol>
+      </nav>
+    )}
+    <Default {...Astro.props}><slot /></Default>
+  </>
+)}
+
+<style>
+  .crumbs { margin-bottom: calc(var(--ds-space-2) * -1); }
+  ol { display: flex; flex-wrap: wrap; align-items: center; gap: 0; margin: 0; padding: 0; list-style: none; font-size: var(--sl-text-xs); }
+  li { margin: 0; display: inline-flex; align-items: center; }
+  li + li::before { content: '›'; margin-inline: var(--ds-space-2); color: var(--ds-text-subtle); }
+  a { display: inline-flex; align-items: center; min-height: var(--ds-target-min); color: var(--ds-text-muted); text-decoration: none; }
+  a:hover { color: var(--ds-text); text-decoration: underline; text-underline-offset: .2em; }
+</style>

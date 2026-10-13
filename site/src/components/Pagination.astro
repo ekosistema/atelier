@@ -1,0 +1,138 @@
+---
+// Sustituye al anterior/siguiente secuencial de Starlight (que recorría el menú y saltaba entre temas
+// sin relación). En un manual ofrece: avance dentro de su ruta de aprendizaje, marcar como completado
+// y otros manuales del mismo tema. Fuera de los manuales no muestra nada.
+import { bySlug, routesOf, categoryOf, href, routeHref, levelKey, cap, base } from '../data/lib';
+
+const id = Astro.locals.starlightRoute.entry.id;
+const slug = id.startsWith('manuales/') ? id.slice('manuales/'.length) : '';
+const manual = slug ? bySlug.get(slug) : undefined;
+
+const routes = manual ? routesOf(slug) : [];
+const category = manual ? categoryOf(slug) : undefined;
+const related = category ? category.slugs.filter((s) => s !== slug).map((s) => bySlug.get(s)!).filter(Boolean).slice(0, 4) : [];
+
+const stepsOf = (r: (typeof routes)[number]) => {
+  const i = r.steps.indexOf(slug);
+  return {
+    n: i + 1,
+    total: r.steps.length,
+    prev: i > 0 ? bySlug.get(r.steps[i - 1]) : undefined,
+    next: i < r.steps.length - 1 ? bySlug.get(r.steps[i + 1]) : undefined,
+  };
+};
+---
+
+{manual && (
+  <nav class="more not-content" aria-label="Continuar aprendiendo" data-slug={slug}>
+    {routes.map((r, i) => {
+      const s = stepsOf(r);
+      return (
+        <div class="route" data-route={r.id} hidden={i > 0} style={`--c:${r.accent}`}>
+          <p class="where">
+            <span>Ruta</span>
+            <a href={routeHref(r.id)}>{r.title}</a>
+            <span class="pos">· paso {s.n} de {s.total}</span>
+          </p>
+          <div class="pair">
+            {s.prev ? (
+              <a class="step prev" rel="prev" href={`${href(s.prev.slug)}?ruta=${r.id}`}>
+                <small>← Anterior en la ruta</small>
+                <strong>{s.prev.title}</strong>
+              </a>
+            ) : (
+              <span class="step edge"><small>Principio de la ruta</small><strong>Estás en el primer paso</strong></span>
+            )}
+            {s.next ? (
+              <a class="step next" rel="next" href={`${href(s.next.slug)}?ruta=${r.id}`}>
+                <small>Siguiente en la ruta →</small>
+                <strong>{s.next.title}</strong>
+              </a>
+            ) : (
+              <a class="step next" href={`${base}/rutas/`}>
+                <small>¡Última etapa de la ruta! →</small>
+                <strong>Elegir otra ruta</strong>
+              </a>
+            )}
+          </div>
+        </div>
+      );
+    })}
+
+    <label class="mark">
+      <input type="checkbox" data-check={slug} />
+      <span>Marcar este manual como completado</span>
+    </label>
+
+    {related.length > 0 && (
+      <div class="related">
+        <p class="rel-title">Más sobre <a href={`${base}/manuales/#${category!.id}`}>{category!.title}</a></p>
+        <ul>
+          {related.map((m) => (
+            <li>
+              <a href={href(m.slug)}>
+                <span>{m.title}</span>
+                <span class="chip chip-level" data-level={levelKey(m.level)}>{cap(m.level)}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    )}
+  </nav>
+)}
+
+<script>
+  import { readDone, setDone, rememberRoute, recallRoute } from '../scripts/progress';
+
+  const nav = document.querySelector<HTMLElement>('nav.more');
+  if (nav) {
+    // Ruta activa: ?ruta= (si viene de una ruta), si no la última visitada, si no la primera.
+    const blocks = [...nav.querySelectorAll<HTMLElement>('.route')];
+    const wanted = new URLSearchParams(location.search).get('ruta') ?? recallRoute();
+    const match = blocks.find((b) => b.dataset.route === wanted);
+    if (match) {
+      blocks.forEach((b) => (b.hidden = b !== match));
+      rememberRoute(match.dataset.route!);
+    }
+
+    const box = nav.querySelector<HTMLInputElement>('[data-check]')!;
+    box.checked = readDone().has(box.dataset.check!);
+    box.addEventListener('change', () => setDone(box.dataset.check!, box.checked));
+  }
+</script>
+
+<style>
+  .more { display: grid; gap: var(--ds-space-5); margin-top: var(--ds-space-7); padding-top: var(--ds-space-5); border-top: 1px solid var(--ds-border); }
+  .route[hidden] { display: none; }
+  .where { margin: 0 0 var(--ds-space-3); display: flex; flex-wrap: wrap; gap: var(--ds-space-2); align-items: baseline; font-size: var(--sl-text-sm); color: var(--ds-text-muted); }
+  .where > span:first-child { font-size: var(--sl-text-xs); text-transform: uppercase; letter-spacing: .06em; color: var(--ds-text-subtle); }
+  .where a { color: var(--ds-text); font-weight: 650; text-underline-offset: .2em; }
+  .pos { color: var(--ds-text-subtle); font-variant-numeric: tabular-nums; }
+
+  .pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(16rem, 100%), 1fr)); gap: var(--ds-space-3); }
+  .step {
+    display: flex; flex-direction: column; gap: 2px; padding: var(--ds-space-3) var(--ds-space-4); border: 1px solid var(--ds-border);
+    border-radius: var(--ds-radius-md); background: var(--ds-surface); text-decoration: none; min-height: 4rem; justify-content: center;
+    transition: border-color var(--ds-dur-fast), transform var(--ds-dur-fast);
+  }
+  a.step:hover { border-color: var(--c); transform: translateY(-2px); }
+  .step small { font-size: var(--sl-text-xs); color: var(--ds-text-subtle); }
+  .step strong { color: var(--ds-text); font-size: var(--sl-text-base); }
+  .next { text-align: end; align-items: flex-end; }
+  .edge { border-style: dashed; }
+
+  .mark { display: inline-flex; gap: var(--ds-space-3); align-items: center; min-height: var(--ds-target-min); font-size: var(--sl-text-sm); color: var(--ds-text-muted); cursor: pointer; width: fit-content; }
+  .mark input { accent-color: var(--ds-accent); width: 1.125rem; height: 1.125rem; margin: 0; }
+
+  .rel-title { margin: 0 0 var(--ds-space-2); font-size: var(--sl-text-sm); color: var(--ds-text-muted); }
+  .rel-title a { color: var(--ds-text); font-weight: 650; }
+  .related ul { display: flex; flex-wrap: wrap; gap: var(--ds-space-2); margin: 0; padding: 0; list-style: none; }
+  .related li { margin: 0; }
+  .related li a {
+    display: inline-flex; align-items: center; gap: var(--ds-space-2); min-height: 2.25rem; padding: 0 var(--ds-space-3);
+    border: 1px solid var(--ds-border); border-radius: var(--ds-radius-pill); background: var(--ds-surface); color: var(--ds-text); font-size: var(--sl-text-sm); text-decoration: none;
+  }
+  .related li a:hover { border-color: var(--ds-accent); }
+  @media (pointer: coarse) { .mark, .step { min-height: var(--ds-target-touch); } }
+</style>

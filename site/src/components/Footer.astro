@@ -1,0 +1,48 @@
+---
+// Pie de página: añade, bajo el pie estándar de Starlight, los enlaces secundarios del proyecto
+// (Estado del software, repositorio, licencia) y el crédito a CeleroLab con su logotipo.
+import Default from '@astrojs/starlight/components/Footer.astro';
+import CeleroLogo from './CeleroLogo.astro';
+import { base, celeroUrl } from '../data/lib';
+import { site as brand } from '../data/site.mjs';
+
+const repo = import.meta.env.PUBLIC_REPO_URL ?? brand.repo;
+---
+
+<Default><slot /></Default>
+
+<section class="credits not-content" aria-label="Sobre el proyecto">
+  <div class="brand">
+    <a class="logo" href={celeroUrl('footer')} rel="noopener"><CeleroLogo height={26} class="lazy" /></a>
+    <p>
+      Colección creada y mantenida por{' '}<a href={celeroUrl('footer_text')} rel="noopener">CeleroLab</a>.
+      Contenido libre bajo licencia MIT.
+    </p>
+  </div>
+
+  <nav aria-label="Pie de página">
+    <ul>
+      <li><a href={`${base}/rutas/`}>Rutas de aprendizaje</a></li>
+      <li><a href={`${base}/manuales/`}>Índice de manuales</a></li>
+      <li><a href={`${base}/estado/`}>Estado del software</a></li>
+      <li><a href={repo} rel="noopener">Repositorio</a></li>
+      <li><a href={`${repo}/issues`} rel="noopener">Informar de un error</a></li>
+      <li><a href={`${repo}/blob/main/LICENSE`} rel="noopener">Licencia MIT</a></li>
+    </ul>
+  </nav>
+</section>
+
+<style>
+  .credits {
+    display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: var(--ds-space-5) var(--ds-space-7); align-items: start;
+    margin-top: var(--ds-space-6); padding-top: var(--ds-space-5); border-top: 1px solid var(--ds-border); font-size: var(--sl-text-sm); color: var(--ds-text-muted);
+  }
+  .brand p { margin: var(--ds-space-3) 0 0; max-width: 42ch; line-height: 1.6; }
+  .brand p a { color: var(--ds-text); font-weight: 600; text-underline-offset: .2em; }
+  .logo { display: inline-flex; align-items: center; min-height: var(--ds-target-min); }
+  nav ul { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--ds-space-1) var(--ds-space-5); margin: 0; padding: 0; list-style: none; }
+  nav li { margin: 0; }
+  nav a { display: inline-flex; align-items: center; min-height: var(--ds-target-min); color: var(--ds-text-muted); text-decoration: none; }
+  nav a:hover { color: var(--ds-text); text-decoration: underline; text-underline-offset: .2em; }
+  @media (max-width: 40rem) { .credits { grid-template-columns: 1fr; } }
+</style>

@@ -1,0 +1,145 @@
+---
+import CeleroLogo from './CeleroLogo.astro';
+import { manuals, categories, paths, base, celeroUrl } from '../data/lib';
+
+const stats = [
+  { n: manuals.length, l: 'manuales' },
+  { n: paths.length, l: 'rutas guiadas' },
+  { n: categories.length, l: 'áreas' },
+];
+---
+
+<section class="hero not-content" aria-labelledby="hero-title">
+  <div class="copy">
+    <p class="eyebrow"><i aria-hidden="true"></i> Revisado octubre–noviembre 2026</p>
+    <h1 id="hero-title">Domina tu entorno de desarrollo, <span>paso a paso</span></h1>
+    <p class="sub">
+      Manuales prácticos en español, con ejemplos que funcionan, el estado real de cada herramienta y la
+      alternativa moderna cuando la clásica ya no es la mejor opción.
+    </p>
+
+    <button type="button" class="search" data-hero-search>
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <span>Busca un comando o una herramienta…</span>
+      <kbd aria-hidden="true">Ctrl K</kbd>
+    </button>
+
+    <div class="cta">
+      <a class="btn primary" href={`${base}/rutas/`}>Elegir una ruta</a>
+      <a class="btn" href={`${base}/manuales/`}>Ver todos los manuales</a>
+    </div>
+
+    <ul class="stats" aria-label="La colección en cifras">
+      {stats.map((s) => (<li><strong>{s.n}</strong><span>{s.l}</span></li>))}
+    </ul>
+
+    <p class="by">
+      Una colección de
+      <a href={celeroUrl('hero')} rel="noopener"><CeleroLogo height={18} /></a>
+    </p>
+  </div>
+
+  <div class="term" aria-hidden="true">
+    <div class="bar"><b></b><b></b><b></b><span>~/aprende</span></div>
+    <pre><code><span class="l" style="--i:0"><em>$</em> git switch -c feat/mi-primera-rama</span><span class="l dim" style="--i:1">Switched to a new branch 'feat/mi-primera-rama'</span><span class="l" style="--i:2"><em>$</em> uv add httpx &amp;&amp; uv run python app.py</span><span class="l dim" style="--i:3">Resolved 6 packages in 41ms</span><span class="l" style="--i:4"><em>$</em> curl -s api.dev/items | jq '.[] | select(.ok)'</span><span class="l dim" style="--i:5">&#123; "id": 7, "name": "listo", "ok": true &#125;</span><span class="l" style="--i:6"><em>$</em> docker compose up -d<span class="cur"></span></span></code></pre>
+  </div>
+</section>
+
+<script>
+  // El botón de la portada abre el buscador real de Starlight (Pagefind).
+  document.querySelector<HTMLButtonElement>('[data-hero-search]')?.addEventListener('click', () => {
+    document.querySelector<HTMLButtonElement>('site-search button[data-open-modal]')?.click();
+  });
+</script>
+
+<style>
+  .hero {
+    position: relative; display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr);
+    gap: var(--ds-space-7); align-items: center; padding: var(--ds-space-7) 0 var(--ds-space-6);
+  }
+  .hero::before, .hero::after {
+    content: ''; position: absolute; z-index: -1; inset: -6rem auto 0 50%; width: 100vw; transform: translateX(-50%); pointer-events: none;
+  }
+  .hero::before {
+    background:
+      radial-gradient(45rem 22rem at 18% 0%, color-mix(in srgb, var(--ds-accent) 26%, transparent), transparent 70%),
+      radial-gradient(35rem 20rem at 85% 20%, color-mix(in srgb, var(--ds-cyan-400) 14%, transparent), transparent 70%);
+    -webkit-mask-image: linear-gradient(#000 60%, transparent); mask-image: linear-gradient(#000 60%, transparent);
+  }
+  .hero::after {
+    opacity: .3;
+    background-image: linear-gradient(var(--ds-border) 1px, transparent 1px), linear-gradient(90deg, var(--ds-border) 1px, transparent 1px);
+    background-size: 44px 44px;
+    -webkit-mask-image: radial-gradient(60rem 22rem at 30% 0%, #000, transparent 75%); mask-image: radial-gradient(60rem 22rem at 30% 0%, #000, transparent 75%);
+  }
+
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: var(--ds-space-2); margin: 0 0 var(--ds-space-4); padding: .3rem .8rem;
+    font-size: var(--sl-text-xs); font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--ds-accent-text);
+    border: 1px solid color-mix(in srgb, var(--ds-accent) 40%, transparent); border-radius: var(--ds-radius-pill);
+    background: color-mix(in srgb, var(--ds-accent) 12%, transparent);
+  }
+  .eyebrow i { width: .5rem; height: .5rem; border-radius: 50%; background: var(--ds-green-400); box-shadow: 0 0 0 4px color-mix(in srgb, var(--ds-green-400) 25%, transparent); }
+
+  h1 { margin: 0; font-size: clamp(2.2rem, 5vw, 3.6rem); line-height: 1.07; letter-spacing: -.03em; font-weight: 800; color: var(--ds-text); }
+  h1 span { color: var(--ds-accent-text); background: linear-gradient(95deg, var(--ds-accent-text), var(--ds-cyan-400)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+  .sub { margin: var(--ds-space-4) 0 0; max-width: 52ch; font-size: var(--sl-text-lg); line-height: 1.6; color: var(--ds-text-muted); }
+
+  .search {
+    display: flex; align-items: center; gap: var(--ds-space-3); width: 100%; max-width: 30rem; margin-top: var(--ds-space-6);
+    min-height: 3rem; padding: 0 var(--ds-space-4); font: inherit; font-size: var(--sl-text-sm); text-align: start; cursor: text;
+    color: var(--ds-text-subtle); background: var(--ds-surface); border: 1px solid var(--ds-border); border-radius: var(--ds-radius-md);
+    transition: border-color var(--ds-dur-fast), box-shadow var(--ds-dur-fast);
+  }
+  .search:hover { border-color: var(--ds-accent); box-shadow: 0 0 0 4px color-mix(in srgb, var(--ds-accent) 15%, transparent); }
+  .search span { flex: 1; }
+  .search kbd { font: 600 var(--sl-text-xs) var(--sl-font-mono); padding: .15rem .45rem; border: 1px solid var(--ds-border); border-radius: var(--ds-radius-sm); color: var(--ds-text-subtle); background: var(--ds-surface-raised); }
+
+  .cta { display: flex; flex-wrap: wrap; gap: var(--ds-space-3); margin-top: var(--ds-space-4); }
+  .btn {
+    display: inline-flex; align-items: center; min-height: 2.75rem; padding: 0 var(--ds-space-5); border-radius: var(--ds-radius-md);
+    font-weight: 600; text-decoration: none; color: var(--ds-text); border: 1px solid var(--sl-color-gray-4); background: var(--ds-surface);
+    transition: transform var(--ds-dur-fast), border-color var(--ds-dur-fast), box-shadow var(--ds-dur-fast);
+  }
+  .btn:hover { transform: translateY(-2px); border-color: var(--ds-accent); }
+  .btn.primary { color: var(--ds-on-accent); border-color: transparent; background: var(--ds-accent); box-shadow: 0 10px 28px -12px var(--ds-accent); }
+  :root:not([data-theme='light']) .btn.primary { color: #0b0d14; background: linear-gradient(135deg, #9d90ff, #6fe0f2); }
+
+  /* Cifras: rejilla de 3 columnas con la misma alineación a la izquierda */
+  .stats { display: grid; grid-template-columns: repeat(3, max-content); gap: var(--ds-space-3) var(--ds-space-7); margin: var(--ds-space-6) 0 0; padding: 0; list-style: none; }
+  .stats li { display: flex; flex-direction: column; gap: var(--ds-space-1); margin: 0; }
+  .stats strong { font-size: 2rem; font-weight: 800; line-height: 1; color: var(--ds-text); font-variant-numeric: tabular-nums; }
+  .stats span { font-size: var(--sl-text-xs); color: var(--ds-text-subtle); text-transform: uppercase; letter-spacing: .06em; }
+
+  .by { display: flex; align-items: center; gap: var(--ds-space-3); margin: var(--ds-space-6) 0 0; font-size: var(--sl-text-xs); color: var(--ds-text-subtle); text-transform: uppercase; letter-spacing: .06em; }
+  .by a { display: inline-flex; align-items: center; min-height: var(--ds-target-min); opacity: .9; transition: opacity var(--ds-dur-fast); }
+  .by a:hover { opacity: 1; }
+
+  .term {
+    border-radius: var(--ds-radius-lg); overflow: hidden; border: 1px solid #272b3d; background: #0d1117;
+    box-shadow: 0 30px 60px -30px rgb(0 0 0 / .6); transform: perspective(1200px) rotateY(-4deg) rotateX(1.5deg);
+  }
+  .term .bar { display: flex; align-items: center; gap: .4rem; padding: .65rem .9rem; background: #161b22; border-bottom: 1px solid #21262d; }
+  .term .bar b { width: .7rem; height: .7rem; border-radius: 50%; background: #ff5f57; }
+  .term .bar b:nth-child(2) { background: #febc2e; } .term .bar b:nth-child(3) { background: #28c840; }
+  .term .bar span { margin-inline-start: .75rem; font: 500 .75rem var(--sl-font-mono); color: #8b949e; }
+  .term pre { margin: 0; padding: 1.1rem 1.2rem 1.4rem; background: transparent; border: 0; overflow: hidden; }
+  .term code { display: block; font: 500 .82rem/1.9 var(--sl-font-mono); color: #e6edf3; white-space: normal; background: none; padding: 0; }
+  .l { display: block; white-space: pre; opacity: 0; animation: in .45s var(--ds-ease) forwards; animation-delay: calc(var(--i) * .55s + .3s); }
+  .l em { font-style: normal; color: #7ee787; margin-inline-end: .5ch; }
+  .l.dim { color: #8b949e; }
+  .cur { display: inline-block; width: .55ch; height: 1.05em; margin-inline-start: .3ch; vertical-align: text-bottom; background: #e6edf3; animation: blink 1s steps(2) infinite; }
+  @keyframes in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  @keyframes blink { 50% { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .l { animation: none; opacity: 1; } .cur { animation: none; } }
+  @media (forced-colors: active) { h1 span { -webkit-text-fill-color: currentColor; background: none; } }
+
+  @media (max-width: 62rem) {
+    .hero { grid-template-columns: 1fr; padding-top: var(--ds-space-5); gap: var(--ds-space-6); }
+    .term { transform: none; }
+  }
+  @media (max-width: 30rem) {
+    .stats { grid-template-columns: repeat(3, 1fr); gap: var(--ds-space-3); }
+    .search kbd { display: none; }
+  }
+</style>

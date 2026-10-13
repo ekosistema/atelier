@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72" role="img" aria-labelledby="t"><title id="t">Atelier</title>
+  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7c6cff"/><stop offset="1" stop-color="#22d3ee"/></linearGradient></defs>
+  <path d="M28.66 9.5L30.25 2.49L41.75 2.49L43.34 9.5A27.5 27.5 0 0 1 49.55 12.07L49.55 12.07L55.63 8.24L63.76 16.37L59.93 22.45A27.5 27.5 0 0 1 62.5 28.66L62.5 28.66L69.51 30.25L69.51 41.75L62.5 43.34A27.5 27.5 0 0 1 59.93 49.55L59.93 49.55L63.76 55.63L55.63 63.76L49.55 59.93A27.5 27.5 0 0 1 43.34 62.5L43.34 62.5L41.75 69.51L30.25 69.51L28.66 62.5A27.5 27.5 0 0 1 22.45 59.93L22.45 59.93L16.37 63.76L8.24 55.63L12.07 49.55A27.5 27.5 0 0 1 9.5 43.34L9.5 43.34L2.49 41.75L2.49 30.25L9.5 28.66A27.5 27.5 0 0 1 12.07 22.45L12.07 22.45L8.24 16.37L16.37 8.24L22.45 12.07A27.5 27.5 0 0 1 28.66 9.5Z" fill="url(#g)" stroke="url(#g)" stroke-width="2.5" stroke-linejoin="round"/>
+  <g fill="none" stroke="#fff" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"><path d="M36 21.5 26.5 46M36 21.5 45.5 46"/></g>
+  <rect x="30.5" y="40.5" width="11" height="5" rx="2.5" fill="#fff"/></svg>

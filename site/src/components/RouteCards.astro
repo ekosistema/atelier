@@ -1,0 +1,39 @@
+---
+import { paths, routeHref } from '../data/lib';
+const { compact = false } = Astro.props as { compact?: boolean };
+---
+
+<ul class:list={['cards', 'not-content', { compact }]}>
+  {paths.map((p) => (
+    <li>
+      <a class="card" href={routeHref(p.id)} style={`--c:${p.accent}`}>
+        <span class="emoji" aria-hidden="true">{p.emoji}</span>
+        <h3>{p.title}</h3>
+        <p class="aud">{p.audience}</p>
+        {!compact && <p class="goal">{p.goal}</p>}
+        <span class="meta">{p.steps.length} manuales <i aria-hidden="true">→</i></span>
+      </a>
+    </li>
+  ))}
+</ul>
+
+<style>
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(17rem, 100%), 1fr)); gap: var(--ds-space-4); margin: var(--ds-space-5) 0 0; padding: 0; list-style: none; }
+  .cards li { margin: 0; display: flex; }
+  .card {
+    position: relative; display: flex; flex-direction: column; gap: var(--ds-space-1); width: 100%; padding: var(--ds-space-5) var(--ds-space-5) var(--ds-space-4);
+    border: 1px solid var(--ds-border); border-radius: var(--ds-radius-lg); text-decoration: none; color: inherit; overflow: hidden;
+    background: radial-gradient(120% 90% at 0% 0%, color-mix(in srgb, var(--c) 13%, transparent), transparent 60%), var(--ds-surface);
+    transition: transform var(--ds-dur), border-color var(--ds-dur), box-shadow var(--ds-dur);
+  }
+  .card::after { content: ''; position: absolute; inset: 0 0 auto 0; height: 3px; background: var(--c); }
+  .card:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--c) 65%, transparent); box-shadow: var(--ds-shadow-card); }
+  .emoji { font-size: 1.75rem; line-height: 1; margin-bottom: var(--ds-space-1); }
+  h3 { margin: 0; font-size: var(--sl-text-lg); color: var(--ds-text); line-height: 1.25; }
+  .aud { margin: 0; font-size: var(--sl-text-sm); color: var(--ds-text-muted); }
+  .goal { margin: var(--ds-space-2) 0 0; font-size: var(--sl-text-sm); color: var(--ds-text-subtle); flex: 1; }
+  /* El acento se mezcla con el color de texto para mantener contraste 4.5:1 en ambos temas */
+  .meta { margin-top: auto; padding-top: var(--ds-space-3); font-size: var(--sl-text-xs); font-weight: 700; letter-spacing: .04em; color: color-mix(in srgb, var(--c) 55%, var(--ds-text)); }
+  .meta i { font-style: normal; display: inline-block; transition: transform var(--ds-dur); }
+  .card:hover .meta i { transform: translateX(4px); }
+</style>

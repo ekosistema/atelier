@@ -1,0 +1,34 @@
+---
+import { categories, base } from '../data/lib';
+---
+
+<ul class="grid not-content">
+  {categories.map((c) => (
+    <li>
+      <a href={`${base}/manuales/#${c.id}`}>
+        <span class="e" aria-hidden="true">{c.emoji}</span>
+        <span class="b">
+          <strong>{c.title}</strong>
+          <small>{c.blurb}</small>
+        </span>
+        <span class="n" aria-label={`${c.slugs.length} manuales`}>{c.slugs.length}</span>
+      </a>
+    </li>
+  ))}
+</ul>
+
+<style>
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(19rem, 100%), 1fr)); gap: var(--ds-space-3); margin: var(--ds-space-5) 0 0; padding: 0; list-style: none; }
+  .grid li { margin: 0; display: flex; }
+  a {
+    display: grid; grid-template-columns: auto 1fr auto; gap: var(--ds-space-3); align-items: center; width: 100%; padding: var(--ds-space-3) var(--ds-space-4);
+    border: 1px solid var(--ds-border); border-radius: var(--ds-radius-md); text-decoration: none; background: var(--ds-surface);
+    transition: border-color var(--ds-dur-fast), transform var(--ds-dur-fast);
+  }
+  a:hover { border-color: var(--ds-accent); transform: translateY(-2px); }
+  .e { font-size: 1.5rem; width: 2.5rem; height: 2.5rem; display: grid; place-items: center; border-radius: var(--ds-radius-md); background: var(--ds-accent-wash); }
+  .b { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  strong { color: var(--ds-text); font-size: var(--sl-text-sm); }
+  small { color: var(--ds-text-subtle); font-size: var(--sl-text-xs); line-height: 1.35; }
+  .n { font-size: var(--sl-text-xs); font-weight: 700; color: var(--ds-text-muted); background: var(--ds-surface-raised); border-radius: var(--ds-radius-pill); padding: .15rem .6rem; font-variant-numeric: tabular-nums; }
+</style>

@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.astro/
+
+# Generado por scripts/sync-content.mjs (la fuente de verdad es ../sources y ../README.md)
+src/content/docs/manuales/
+src/content/docs/rutas/
+src/content/docs/estado.md
+src/data/manuals.json
