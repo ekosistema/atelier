@@ -250,6 +250,8 @@ Tecnologías revisadas: su estado actual y la alternativa recomendada en esta co
 
 ## 🤝 Cómo contribuir
 
+Guía completa en [CONTRIBUTING.md](./CONTRIBUTING.md); al participar aceptas el [Código de conducta](./CODE_OF_CONDUCT.md). Para vulnerabilidades, consulta la [política de seguridad](./SECURITY.md). Resumen:
+
 1. **Nuevo manual**: copia [`templates/plantilla_manual.md`](./templates/plantilla_manual.md) a `sources/manual_<tema>.md` y enlázalo desde la sección correspondiente de este README (y desde la ruta de aprendizaje o la tabla de estado si procede).
 2. **Verifica los datos**: versiones, fechas de fin de vida y licencias deben comprobarse en la fuente oficial y, si cambian con el tiempo, citarse con enlace. Si no puedes comprobar algo, no lo afirmes.
 3. **Fecha "Revisado"**: actualízala solo cuando revises de verdad el contenido de ese manual.

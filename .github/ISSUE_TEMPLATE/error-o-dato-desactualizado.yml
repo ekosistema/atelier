@@ -1,0 +1,26 @@
+name: Error o dato desactualizado
+description: Un manual contiene un error, un enlace roto o información obsoleta
+title: "[Error] "
+labels: ["documentation"]
+body:
+  - type: input
+    id: manual
+    attributes:
+      label: Manual afectado
+      description: Fichero o URL (por ejemplo sources/manual_git.md)
+    validations:
+      required: true
+  - type: textarea
+    id: problema
+    attributes:
+      label: ¿Qué está mal?
+      description: Describe el error, el enlace roto o el dato desactualizado.
+    validations:
+      required: true
+  - type: textarea
+    id: correccion
+    attributes:
+      label: Corrección propuesta y fuente
+      description: Si puedes, indica qué debería decir y enlaza la fuente oficial.
+    validations:
+      required: false
