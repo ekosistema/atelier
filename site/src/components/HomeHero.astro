@@ -47,7 +47,10 @@ const stats = [
 
 <script>
   // El botón de la portada abre el buscador real de Starlight (Pagefind).
-  document.querySelector<HTMLButtonElement>('[data-hero-search]')?.addEventListener('click', () => {
+  // stopPropagation: Starlight cierra el diálogo con cualquier clic fuera de él que llegue a `window`;
+  // sin esto, el propio clic del hero lo cerraba nada más abrirlo.
+  document.querySelector<HTMLButtonElement>('[data-hero-search]')?.addEventListener('click', (e) => {
+    e.stopPropagation();
     document.querySelector<HTMLButtonElement>('site-search button[data-open-modal]')?.click();
   });
 </script>
