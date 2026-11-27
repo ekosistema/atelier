@@ -83,9 +83,9 @@ const hours = Math.round(totalMin / 6) / 10;
   .lead { font-size: var(--sl-text-lg); color: var(--ds-text-muted); margin: 0 0 var(--ds-space-5); max-width: var(--ds-measure); }
 
   .facts { display: flex; flex-wrap: wrap; gap: var(--ds-space-2); margin: 0 0 var(--ds-space-5); }
-  .facts div { display: inline-flex; gap: var(--ds-space-2); align-items: baseline; padding: .35rem .8rem; border: 1px solid var(--ds-border); border-radius: var(--ds-radius-pill); font-size: var(--sl-text-sm); background: var(--ds-surface); }
+  .facts div { display: inline-flex; flex-wrap: wrap; gap: 0 var(--ds-space-2); align-items: baseline; min-width: 0; max-width: 100%; padding: .35rem .8rem; border: 1px solid var(--ds-border); border-radius: var(--ds-radius-pill); font-size: var(--sl-text-sm); background: var(--ds-surface); }
   .facts dt { color: var(--ds-text-subtle); font-size: var(--sl-text-xs); text-transform: uppercase; letter-spacing: .06em; }
-  .facts dd { margin: 0; color: var(--ds-text); }
+  .facts dd { margin: 0; min-width: 0; color: var(--ds-text); overflow-wrap: anywhere; }
 
   .progress { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: var(--ds-space-4); margin-bottom: var(--ds-space-6); }
   .bar { height: .5rem; background: var(--sl-color-gray-5); border-radius: var(--ds-radius-pill); overflow: hidden; }
